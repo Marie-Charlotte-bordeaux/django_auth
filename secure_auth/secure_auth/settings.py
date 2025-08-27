@@ -9,24 +9,64 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
-
+import os
 from pathlib import Path
+from dotenv import load_dotenv
+import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+load_dotenv(BASE_DIR / ".env")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-=7*%=k*k3v9h^)j^obb&kry(v$d&^y(3wo$-+zspekqn@3fwrd'
+SECRET_KEY = os.environ.get('SECRET_KEY')
+
+#Varaiable pour activer le mode sécurisé
+DJANGO_SECURE = os.getenv('DJANGO_SECURE','False').lower() == 'true'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG =  not DJANGO_SECURE
 
-ALLOWED_HOSTS = []
+#En production : DEBUG=False et SESSION_COOKIE_SECURE=True
+# et CSRF_COOKIE_SECURE=True.
 
+# User model personnalisé
+AUTH_USER_MODEL = "accounts.User"
+
+# Argon2 comme hasher principal
+PASSWORD_HASHERS = [
+    "django.contrib.auth.hashers.Argon2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher",
+    "django.contrib.auth.hashers.BCryptSHA256PasswordHasher",
+]
+
+# Validation des mots de passe
+AUTH_PASSWORD_VALIDATORS = [
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator", "OPTIONS": {"min_length": 12}},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
+]
+
+# Sessions sécurisées
+SESSION_COOKIE_AGE = 3600  # 1 heure
+SESSION_COOKIE_HTTPONLY = True
+# en prod -> mettre True via .env
+SESSION_COOKIE_SECURE = os.getenv("SESSION_COOKIE_SECURE", "False") == "True"
+CSRF_COOKIE_SECURE = os.getenv("CSRF_COOKIE_SECURE", "False") == "True"
+
+# Protection HTTP supplémentaires recommandées
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = "DENY"
+
+# Paramètres du lockout (utilisés par signals.py)
+AUTH_LOCKOUT_THRESHOLD = int(os.getenv("AUTH_LOCKOUT_THRESHOLD", 5))
+AUTH_LOCKOUT_PERIOD = int(os.getenv("AUTH_LOCKOUT_PERIOD", 15 * 60))  # secondes
 
 # Application definition
 
@@ -37,6 +77,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'accounts.apps.AccountsConfig'
 ]
 
 MIDDLEWARE = [
