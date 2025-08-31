@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Tableau de bord{% endblock %}
+{% block content %}
+<div class="dashboard-container">
+  <h1>Dashboard</h1>
+  {% if user.is_authenticated %}
+    <div class="user-info">
+        <p><strong>Email :</strong> {{ user.email }}</p>
+        <p><strong>Email vérifié :</strong> {{ user.email_verified|yesno:"Oui,Non" }}</p>
+        <p><strong>Âge du mot de passe :</strong> {{ user.last_password_change|timesince }}</p>
+        <p><strong>Tentatives échouées récentes :</strong> {{ user.failed_login_attempts }}</p>
+        <p><strong>Groupes :</strong> {% for g in user.groups.all %}{{ g.name }} {% empty %}(aucun){% endfor %}</p>
+    </div>
+
+    <form method="post" action="{% url 'accounts:logout' %}" class="logout-form">
+        {% csrf_token %}
+        <button type="submit">Se déconnecter</button>
+    </form>
+  {% else %}
+    <p style="text-align:center;">
+      <a href="{% url 'accounts:login' %}">Se connecter</a>
+    </p>
+  {% endif %}
+</div>
+{% endblock %}

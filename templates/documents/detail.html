@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ object.title }}</h1>
+<p>{{ object.content }}</p>
+{% if user.has_perm('accounts.publish_document') and user.groups.filter(name='editors').exists %}
+  <form method="post" action="{% url 'accounts:documents:publish' object.pk %}">
+    {% csrf_token %}
+    <button type="submit">Publier</button>
+  </form>
+{% endif %}
+{% endblock %}

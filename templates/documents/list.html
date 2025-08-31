@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Documents</h1>
+<a href="{% url 'accounts:documents:create' %}">Nouveau</a>
+<ul>
+  {% for d in object_list %}
+    <li>
+      <a href="{% url 'accounts:documents:detail' d.pk %}">{{ d.title }}</a>
+      {% if d.owner_id == user.id %}<a href="{% url 'accounts:documents:edit' d.pk %}">[éditer]</a>{% endif %}
+    </li>
+  {% empty %}
+    <li>Aucun document</li>
+  {% endfor %}
+</ul>
+{% endblock %}
